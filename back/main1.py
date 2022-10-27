@@ -8,16 +8,18 @@ class MainApplication:
 
     def __init__(self, master):
         # the login window design
-        self.large_font = ('Verdana', 25)
-        self.small_font = ('Verdana', 10)
+        self.large_font = ('Agency FB', 25)
+        self.small_font = ('Agency FB', 10)
         self.user = tk.StringVar()
         self.password = tk.StringVar()
 
         self.master = master
         self.master.title("Password Storage")
-        self.master.resizable(False, False)
+        #self.master.resizable(True, True)
+        #add logo
 
-        self.loginLabel = tk.Label(self.master, text="**Login**", width=3, height=2, font=self.large_font)
+        #self.loginLabel = tk.Label(self.master, text="Secure Password Management System", width=3, height=2, font=self.large_font)
+        mypass_img = tk.PhotoImage(file="assets/logo.png")
         self.loginLabel.grid(row=0, column=1, sticky=tk.W+tk.E+tk.N+tk.S , padx=10, pady=5)
 
         self.userLabel = tk.Label(self.master, text="User:", width=3, height=3, font=self.large_font)
@@ -86,21 +88,23 @@ class MainApplication:
         self.passwordEntry.grid(row=2, column=1)
         self.passwordEntry.config(fg="black", justify="left")
 
-        self.noteLabel = tk.Label(self.frame1, text="Notes:", font=self.large_font)
-        self.noteLabel.grid(row=3, column=0, sticky=tk.N+tk.E)
+        # self.noteLabel = tk.Label(self.frame1, text="Notes:", font=self.large_font)
+        # self.noteLabel.grid(row=3, column=0, sticky=tk.N+tk.E)
 
-        self.noteText = tk.Text(self.frame1,width=20,height=3, font=self.large_font)
-        self.noteText.grid(row=3, column=1)
-        self.scrollVertNoteText = tk.Scrollbar(self.frame1, command=self.noteText.yview)
-        self.scrollVertNoteText.grid(row=3, column=2, sticky="nsew")
-        self.noteText.config(yscrollcommand=self.scrollVertNoteText.set)
+        # self.noteText = tk.Text(self.frame1,width=20,height=3, font=self.large_font)
+        # self.noteText.grid(row=3, column=1)
+        # self.scrollVertNoteText = tk.Scrollbar(self.frame1, command=self.noteText.yview)
+        # self.scrollVertNoteText.grid(row=3, column=2, sticky="nsew")
+        # self.noteText.config(yscrollcommand=self.scrollVertNoteText.set)
 
         self.savePasswordButton = tk.Button(self.frame1, text="Save New Password", width=20, height=3, cursor="hand2", font=('Arial', 13), command=lambda: self.insertNewPassword())
         self.savePasswordButton.grid(row=4, column=1)
 
         self.label = tk.Label(self.frame2, text="Passwords List", font=("Arial", 30)).grid(row=0, columnspan=3)
 
-        self.cols = ('Password', 'Notes')
+        #self.cols = ('Password', 'Notes')
+
+        self.cols = ('Password')
 
         self.style = ttk.Style()
         self.style.configure("mystyle.Treeview.Heading", font=('Calibri', 13, 'bold'))
@@ -115,8 +119,8 @@ class MainApplication:
         self.passwordsList.column("#0", width=150)
         self.passwordsList.heading("Password", text="Password")
         self.passwordsList.column("Password", width=150)
-        self.passwordsList.heading("Notes", text="Notes")
-        self.passwordsList.column("Notes", width=300)
+        # self.passwordsList.heading("Notes", text="Notes")
+        # self.passwordsList.column("Notes", width=300)
         self.passwordsList.grid(row=1, column=0, columnspan=2, pady=5, padx=5)
 
         self.passwordsList.bind("<Double-1>", self.readNotes)
@@ -177,7 +181,7 @@ class MainApplication:
             self.newNameList.set("")
             self.newPasswordList.set("")
             self.noteText.delete(1.0, tk.END)
-            messagebox.showinfo("Congratulations!", "New password added successfully!")
+            messagebox.showinfo("Success!", "New password added successfully!")
             self.passwordsList.delete(*self.passwordsList.get_children())
             self.passwordTabler()
 
@@ -190,5 +194,6 @@ class MainApplication:
 if __name__ == "__main__":
     db1.createDB()
     root = tk.Tk()
+    canvas = tk.Canvas(width=200, height=200)
     app = MainApplication(root)
     root.mainloop()

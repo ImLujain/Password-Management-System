@@ -1,7 +1,7 @@
 import sqlite3
 from cryptography.fernet import Fernet
 
-key = "Be1PA8snHgb1DS6oaWek62WLE9nxipFw3o3vB4uJ8ZI="  # "secret key" This must be kept secret
+key = "Be1PA8snHgb1DS6oaWek62WLE9nxipFw3o3vB4uJ8ZI="  #get it from login
 cipher_suite = Fernet(key)  # This class provides both encryption and decryption facilities.
 
 def conectionDB(func):
