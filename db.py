@@ -26,12 +26,13 @@ class MainUser(db.Model):
 class ServicesPasswords(db.Model):
     __tablename__ = "ServicesPasswords"
 
-    website = db.Column(db.String(25))
+    service = db.Column(db.String(25))
     service_username = db.Column(db.String(25))
     service_password = db.Column(db.String(300))
+    nonce = db.Column(db.String(300))
+    authTag = db.Column(db.String(300))
 
     
-
 
 
 db.create_all()

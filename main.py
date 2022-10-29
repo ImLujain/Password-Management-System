@@ -2,14 +2,11 @@ from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip        #used for copy/paste clipboard functions
-import hashlib
 from db import MainUser, ServicesPasswords, db, hash_pw
 from AES256GCM import encrypt_AES_GCM , decrypt_AES_GCM
 
 
 FONT = ("Courier", 12, "bold")
-
-
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -55,13 +52,16 @@ class LoginPage():
         else:
             users = db.session.query(MainUser).filter(MainUser.main_username == username1_input.get()).first()
             if users:
+
                 hash_512 = hash_pw(password1_input.get(), "sha512")
                 key_256 = hash_pw(password1_input.get(), "sha256")
-                ### TEST
-                print("Main user Password (hash512):" , hash_512)
-                print("Encryption KEY (hash256):" , key_256)
-                ### END TEST
+            
                 if users.main_password == hash_512:
+                    ### TEST
+                    print("Main user Password (hash512):" , hash_512)
+                    print("Encryption KEY (hash256):" , key_256)
+                    print("---------------------------------------------------")
+                    ### END TEST
                     #destroy_old 
                     username1.destroy()
                     password1.destroy()
@@ -88,7 +88,7 @@ class PWMPage():
 
     # ---------------------------- ENTER SERVICE INFO ------------------------------- #
     def build_page(key_256):
-        # website: label
+        # service: label
         service = Label(text="Service: ", font=FONT)
         service.grid(row=1, column=0)
 
@@ -100,7 +100,7 @@ class PWMPage():
         svc_password = Label(text="Password: ", font=FONT)
         svc_password.grid(row=3, column=0)
 
-        # website_input box
+        # service_input box
         service_input = Entry(width=35)
         service_input.focus()
         service_input.grid(row=1, column=1, columnspan=2)
@@ -172,7 +172,8 @@ class PWMPage():
         print("encrypted_pw:" , encrypted_pw[0])
 
         # (2) Save Service info to DB with Encrypted Password:
-        svc = ServicesPasswords(website= service_input.get(), service_username= svc_username_input.get(), service_password= encrypted_pw[0]) 
+        svc = ServicesPasswords(service= service_input.get(), service_username= svc_username_input.get(), 
+                                service_password= encrypted_pw[0], nonce= encrypted_pw[1], authTag= encrypted_pw[2]) 
         db.add(svc)
         db.commit()
 
@@ -182,8 +183,19 @@ class PWMPage():
 
         # Decrypt and show all passwords:
         # (1) We have to retrive not only the ciphertext (encrypted_pw[0]) , but also the nonce (encrypted_pw[1]) and authTag (encrypted_pw[2]) for each password
-        # (2) These three parametrs have to be sent to decrypt_AES_GCM() fonction along with the secretKey_half
-        # NOTE : I think we will need to save into db not only the encrypted password but also the nonce (encrypted_pw[1]) and authTag (encrypted_pw[2])
+        # (2) These three parametrs have to be sent to decrypt_AES_GCM() fonction in a tuple along with the secretKey_half
+        # NOTE : we need to save into db the encrypted password and also the nonce (encrypted_pw[1]) and authTag (encrypted_pw[2])
+        #        Since they are being changed with each password, no worries if they were public/known or stored in the db
+        #        ONLY the KEY has to remain secret !!
+        print("---------------------- #### ADD PASSWORD #### ----------------------")
+        print("TEST: DECRYPT ALL PASSWORDS AND SHOW THEM ..... ")
+        id = 0
+        for all_svc_info in ServicesPasswords.query():
+            decryption_info = ( all_svc_info.service_password , all_svc_info.nonce , all_svc_info.authTag)
+            id = id + 1
+            print("Decrypted Password " , id , ":" , decrypt_AES_GCM(decryption_info , secretKey_half))
+        print("---------------------- #### END #### ----------------------")
+
 
 
 # --------------------------------------------- APP LAUNCHER --------------------------------------------- #

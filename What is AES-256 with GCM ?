@@ -1,7 +1,7 @@
 ---------------------------------------------
 GCM (Galois Counter Mode) mode (AES-GCM)
 
-A combination of Counter mode (CTR) and Authentication. Uses a Message Authentication Code (MAC) for authentication/integrity.
+A combination of Counter mode (CTR) and Authentication. Uses a Message Authentication Code (MAC) to check authentication/integrity.
 
 Pros:
     - Guarantees integrity (to establish if the ciphertext was modified in transit or if it really originates from a certain source)
