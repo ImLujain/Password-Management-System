@@ -55,9 +55,9 @@ class LoginPage():
         else:
             users = db.session.query(MainUser).filter(MainUser.main_username == username1_input.get()).first()
             if users:
-                key_256 = hash_pw(password1_input.get(), "sha256")
-                hash_512 = hash_pw(password1_input.get(), "sha512")
-                if users.main_password == hash_512:
+                hash_256 = hash_pw(password1_input.get(), "sha256")
+                #key_512 = hash_pw(password1_input.get(), "sha512")
+                if users.main_password == hash_256:
                     #destroy_old 
                     username1.destroy()
                     password1.destroy()
@@ -65,14 +65,14 @@ class LoginPage():
                     password1_input.destroy()
                     button.destroy()
                     #Go to PAGE (2)
-                    PWMPage.build_page(key_256)
+                    PWMPage.build_page()
                 else:
                     messagebox.showinfo(title="Listen Up", message="Wrong Password, try again!")
                     #FUTURE Enhancement1: we can do more here, for example max of 5 attempts to prevent BFA.
             else:
                 answer = messagebox.askquestion("Unregistered User", "Do you want to create a new one?")
                 if answer == "yes":
-                    user = MainUser(main_username=username1_input.get(), main_password=  hash_pw(password1_input.get(), "sha512"))
+                    user = MainUser(main_username=username1_input.get(), main_password=  hash_pw(password1_input.get(), "sha256"))
                     db.add(user)
                     db.commit()
 
@@ -83,7 +83,7 @@ class LoginPage():
 class PWMPage():
 
     # ---------------------------- ENTER SERVICE INFO ------------------------------- #
-    def build_page(key_256):
+    def build_page():
         # website: label
         service = Label(text="Service: ", font=FONT)
         service.grid(row=1, column=0)
@@ -118,18 +118,18 @@ class PWMPage():
         # Add button
         add_svc_button = Button(text="Add", width=33)
         add_svc_button.grid(row=5, column=1,columnspan=2)
-        add_svc_button.configure(command= lambda: PWMPage.add_toDB(service_input, svc_username_input, svc_password_input,key_256))
+        add_svc_button.configure(command= lambda: PWMPage.add_toDB(service_input, svc_username_input, svc_password_input,))
 
 
     #encrypt and insert to db
-    def add_toDB(service_input, svc_username_input, svc_password_input,key_256): 
+    def add_toDB(service_input, svc_username_input, svc_password_input): 
         
         if service_input.get() == "" or svc_username_input.get() == "" or svc_password_input.get() == "":
             messagebox.showinfo(title="Listen Up", message="No empty fields allowed!")
 
         else:
             #encrypt password + save all service info to the database
-            PWMPage.save_svc_password(service_input, svc_username_input, svc_password_input,key_256)
+            PWMPage.save_svc_password(service_input, svc_username_input, svc_password_input)
 
 
     # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -159,7 +159,7 @@ class PWMPage():
     
 
     # ---------------------------- SAVE SERVICE INFO TO DB ------------------------------- #
-    def save_svc_password(service_input, svc_username_input, svc_password_input ,key_256):
+    def save_svc_password(service_input, svc_username_input, svc_password_input):
 
         # (1) Encrypt Password with a random 256bit-key using ASE256 + GCM:
         msg = svc_password_input.get()
