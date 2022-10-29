@@ -1,0 +1,22 @@
+---------------------------------------------
+GCM (Galois Counter Mode) mode (AES-GCM)
+
+A combination of Counter mode (CTR) and Authentication. Uses a Message Authentication Code (MAC) for authentication/integrity.
+
+Pros:
+    - Guarantees integrity (to establish if the ciphertext was modified in transit or if it really originates from a certain source)
+    - Accepts pipelined and parallelized implementations and have a minimal computational footprint
+
+Cons:
+    - Complex implementation.
+
+---------------------------------------------
+The AES-GCM encryption takes as input a (message) + (encryption key) and produces as output a set of values: { ciphertext + nonce + authTag }.
+(1) The ciphertext: is the encrypted message.
+(2) The nonce: is the randomly generated initial vector (IV) for the GCM construction.
+(3) The authTag: is the message authentication code (MAC) calculated during the encryption and used to check ciphertext's intigrity.
+
+The encryption key size generated in the code is 256 bits (32 bytes) and it configures the AES-GCM cipher as AES-256-GCM. 
+
+If we change something before the decryption (e.g. the ciphertext of the IV), we will get and exception, because the message integrity will be broken 
+(ValueError: MAC check failed)
