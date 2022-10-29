@@ -1,21 +1,22 @@
 from Crypto.Cipher import AES
-import binascii, os
+import binascii
+from db import hash_pw
 
-secretKey = os.urandom(32)  # 256-bit random encryption key
 
-def encrypt_AES_GCM(msg):
-    aesCipher = AES.new(secretKey, AES.MODE_GCM)
+
+def encrypt_AES_GCM(msg , secretKey_half):
+    aesCipher = AES.new(secretKey_half, AES.MODE_GCM)
     ciphertext, authTag = aesCipher.encrypt_and_digest(msg)
     return (ciphertext, aesCipher.nonce, authTag)
 
-def decrypt_AES_GCM(encrypted_msg):
+def decrypt_AES_GCM(encrypted_msg , secretKey_half):
     (ciphertext, nonce, authTag) = encrypted_msg
-    aesCipher = AES.new(secretKey, AES.MODE_GCM, nonce)
+    aesCipher = AES.new(secretKey_half, AES.MODE_GCM, nonce)
     plaintext = aesCipher.decrypt_and_verify(ciphertext, authTag)
     return plaintext
 
 
-#print("Encryption key:", binascii.hexlify(secretKey))
+#print("Encryption key:", binascii.hexlify(secretKey_half))
 
 #msg = 'Message for AES-256-GCM + Scrypt encryption'
 #encryptedMsg = encrypt_AES_GCM(msg.encode("utf-8"))

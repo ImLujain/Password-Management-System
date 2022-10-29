@@ -55,24 +55,28 @@ class LoginPage():
         else:
             users = db.session.query(MainUser).filter(MainUser.main_username == username1_input.get()).first()
             if users:
-                hash_256 = hash_pw(password1_input.get(), "sha256")
-                #key_512 = hash_pw(password1_input.get(), "sha512")
-                if users.main_password == hash_256:
+                hash_512 = hash_pw(password1_input.get(), "sha512")
+                key_256 = hash_pw(password1_input.get(), "sha256")
+                ### TEST
+                print("Main user Password (hash512):" , hash_512)
+                print("Encryption KEY (hash256):" , key_256)
+                ### END TEST
+                if users.main_password == hash_512:
                     #destroy_old 
                     username1.destroy()
                     password1.destroy()
                     username1_input.destroy()
                     password1_input.destroy()
                     button.destroy()
-                    #Go to PAGE (2)
-                    PWMPage.build_page()
+                    #Go to PAGE (2) + Send the encryption key to be used for services passwords encryption 
+                    PWMPage.build_page(key_256)
                 else:
                     messagebox.showinfo(title="Listen Up", message="Wrong Password, try again!")
                     #FUTURE Enhancement1: we can do more here, for example max of 5 attempts to prevent BFA.
             else:
                 answer = messagebox.askquestion("Unregistered User", "Do you want to create a new one?")
                 if answer == "yes":
-                    user = MainUser(main_username=username1_input.get(), main_password=  hash_pw(password1_input.get(), "sha256"))
+                    user = MainUser(main_username=username1_input.get(), main_password=  hash_pw(password1_input.get(), "sha512"))
                     db.add(user)
                     db.commit()
 
@@ -83,7 +87,7 @@ class LoginPage():
 class PWMPage():
 
     # ---------------------------- ENTER SERVICE INFO ------------------------------- #
-    def build_page():
+    def build_page(key_256):
         # website: label
         service = Label(text="Service: ", font=FONT)
         service.grid(row=1, column=0)
@@ -118,18 +122,18 @@ class PWMPage():
         # Add button
         add_svc_button = Button(text="Add", width=33)
         add_svc_button.grid(row=5, column=1,columnspan=2)
-        add_svc_button.configure(command= lambda: PWMPage.add_toDB(service_input, svc_username_input, svc_password_input,))
+        add_svc_button.configure(command= lambda: PWMPage.add_toDB(service_input, svc_username_input, svc_password_input, key_256))
 
 
     #encrypt and insert to db
-    def add_toDB(service_input, svc_username_input, svc_password_input): 
+    def add_toDB(service_input, svc_username_input, svc_password_input, key_256): 
         
         if service_input.get() == "" or svc_username_input.get() == "" or svc_password_input.get() == "":
             messagebox.showinfo(title="Listen Up", message="No empty fields allowed!")
 
         else:
-            #encrypt password + save all service info to the database
-            PWMPage.save_svc_password(service_input, svc_username_input, svc_password_input)
+            # encrypt password + save all service info to the database
+            PWMPage.save_svc_password(service_input, svc_username_input, svc_password_input, key_256)
 
 
     # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -159,11 +163,12 @@ class PWMPage():
     
 
     # ---------------------------- SAVE SERVICE INFO TO DB ------------------------------- #
-    def save_svc_password(service_input, svc_username_input, svc_password_input):
+    def save_svc_password(service_input, svc_username_input, svc_password_input, key_256):
 
         # (1) Encrypt Password with a random 256bit-key using ASE256 + GCM:
         msg = svc_password_input.get()
-        encrypted_pw = encrypt_AES_GCM(msg.encode("utf-8"))
+        secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8") # ASE-256 only accepts key size (32 byte) which is half of the sha256 value (64 byte)
+        encrypted_pw = encrypt_AES_GCM(msg.encode("utf-8") , secretKey_half)
         print("encrypted_pw:" , encrypted_pw[0])
 
         # (2) Save Service info to DB with Encrypted Password:
@@ -172,12 +177,13 @@ class PWMPage():
         db.commit()
 
         # (3) Show all Services Info in the GUI with Decrypted Passwords:
-        decrypted_pw = decrypt_AES_GCM(encrypted_pw)
+        decrypted_pw = decrypt_AES_GCM(encrypted_pw , secretKey_half)
         print("decrypted_pw:" , decrypted_pw)
 
-
-
-
+        # Decrypt and show all passwords:
+        # (1) We have to retrive not only the ciphertext (encrypted_pw[0]) , but also the nonce (encrypted_pw[1]) and authTag (encrypted_pw[2]) for each password
+        # (2) These three parametrs have to be sent to decrypt_AES_GCM() fonction along with the secretKey_half
+        # NOTE : I think we will need to save into db not only the encrypted password but also the nonce (encrypted_pw[1]) and authTag (encrypted_pw[2])
 
 
 # --------------------------------------------- APP LAUNCHER --------------------------------------------- #

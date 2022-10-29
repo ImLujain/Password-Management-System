@@ -30,6 +30,8 @@ class ServicesPasswords(db.Model):
     service_username = db.Column(db.String(25))
     service_password = db.Column(db.String(300))
 
+    
+
 
 
 db.create_all()
