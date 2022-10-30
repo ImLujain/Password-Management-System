@@ -85,40 +85,6 @@ class LoginPage():
 # --------------------------------------------- PAGE (2) --------------------------------------------- #
 class PWMPage():
 
-    # global secretKey_half
-
-    # def create(secretKey_half):
-    #     svc_list = db.session.query(ServicesPasswords).all()
-
-    #     pass_window = Toplevel(window)
-    #     pass_window.title("passwords list")
-    #     pass_window.config(padx=20, pady=20)
-    #     pass_window.geometry("500x500")
-    #             # service: label
-    #     service = Label(pass_window, text="Service: ", font=FONT)
-    #     service.grid(row=1, column=0)
-
-    #     # email/username label
-    #     svc_username = Label(pass_window, text="Username: ", font=FONT)
-    #     svc_username.grid(row=1, column=2)
-
-    #     # password: label
-    #     svc_password = Label(pass_window, text="Password: ", font=FONT)
-    #     svc_password.grid(row=1, column=4 )
-    #     row = 2
-    #     for svc in svc_list:
-    #         decryption_info = ( svc.service_password , svc.nonce , svc.authTag)
-    #         e = Label(pass_window, text=svc.service, font=FONT)
-    #         e.grid(row=row, column=0)
-    #         e = Label(pass_window, text=svc.service_username, font=FONT)
-    #         e.grid(row=row, column=2)
-    #         e = Label(pass_window, text=decrypt_AES_GCM(decryption_info , secretKey_half), font=FONT)
-    #         e.grid(row=row, column=3)
-
-    #         row=row+1
-    #     pass_window.mainloop()
-
-
     # ---------------------------- ENTER SERVICE INFO ------------------------------- #
     def build_page(key_256):
         # service: label
