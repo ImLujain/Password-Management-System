@@ -2,16 +2,15 @@ from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip        #used for copy/paste clipboard functions
-from db import MainUser, ServicesPasswords, db, hash_pw
+from db import MainUser, ServicesPasswords, db, hash_pw #, decrypt_passwords
 from AES256GCM import encrypt_AES_GCM , decrypt_AES_GCM
 
 
 FONT = ("Courier", 12, "bold")
 
-
 # ---------------------------- UI SETUP ------------------------------- #
 window = Tk()
-window.title("Password Manager")
+window.title(" Secured Password Manager")
 window.config(padx=20, pady=20)
 
 #the canvas
@@ -86,6 +85,40 @@ class LoginPage():
 # --------------------------------------------- PAGE (2) --------------------------------------------- #
 class PWMPage():
 
+    # global secretKey_half
+
+    # def create(secretKey_half):
+    #     svc_list = db.session.query(ServicesPasswords).all()
+
+    #     pass_window = Toplevel(window)
+    #     pass_window.title("passwords list")
+    #     pass_window.config(padx=20, pady=20)
+    #     pass_window.geometry("500x500")
+    #             # service: label
+    #     service = Label(pass_window, text="Service: ", font=FONT)
+    #     service.grid(row=1, column=0)
+
+    #     # email/username label
+    #     svc_username = Label(pass_window, text="Username: ", font=FONT)
+    #     svc_username.grid(row=1, column=2)
+
+    #     # password: label
+    #     svc_password = Label(pass_window, text="Password: ", font=FONT)
+    #     svc_password.grid(row=1, column=4 )
+    #     row = 2
+    #     for svc in svc_list:
+    #         decryption_info = ( svc.service_password , svc.nonce , svc.authTag)
+    #         e = Label(pass_window, text=svc.service, font=FONT)
+    #         e.grid(row=row, column=0)
+    #         e = Label(pass_window, text=svc.service_username, font=FONT)
+    #         e.grid(row=row, column=2)
+    #         e = Label(pass_window, text=decrypt_AES_GCM(decryption_info , secretKey_half), font=FONT)
+    #         e.grid(row=row, column=3)
+
+    #         row=row+1
+    #     pass_window.mainloop()
+
+
     # ---------------------------- ENTER SERVICE INFO ------------------------------- #
     def build_page(key_256):
         # service: label
@@ -120,9 +153,15 @@ class PWMPage():
         gen_pass.configure(command= lambda: PWMPage.generate_password(svc_password_input))
 
         # Add button
-        add_svc_button = Button(text="Add", width=33)
-        add_svc_button.grid(row=5, column=1,columnspan=2)
+        add_svc_button = Button(text="Add", width=14)
+        add_svc_button.grid(row=5, column=1)
         add_svc_button.configure(command= lambda: PWMPage.add_toDB(service_input, svc_username_input, svc_password_input, key_256))
+
+        # Show Passwords Button 
+
+        show_pass_button = Button(text="show Passwords", width=14)
+        show_pass_button.grid(row=5, column=2)
+        show_pass_button.configure(command= lambda:show_passwords_page.create(key_256))
 
 
     #encrypt and insert to db
@@ -164,7 +203,7 @@ class PWMPage():
 
     # ---------------------------- SAVE SERVICE INFO TO DB ------------------------------- #
     def save_svc_password(service_input, svc_username_input, svc_password_input, key_256):
-
+        global secretKey_half
         # (1) Encrypt Password with a random 256bit-key using ASE256 + GCM:
         msg = svc_password_input.get()
         secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8") # ASE-256 only accepts key size (32 byte) which is half of the sha256 value (64 byte)
@@ -199,5 +238,45 @@ class PWMPage():
 
 
 # --------------------------------------------- APP LAUNCHER --------------------------------------------- #
+class show_passwords_page():
+    def create(key_256):
+        secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8")
+        svc_list = db.session.query(ServicesPasswords).all()
+
+        pass_window = Toplevel(window)
+        #the canvas
+        canvas = Canvas(pass_window ,width=200, height=200)
+        mypass_img = PhotoImage(file="assets/logo.png")
+        canvas.create_image(100, 100, image=mypass_img)
+        canvas.grid(row=0, column=0)
+        pass_window.title("passwords list")
+        pass_window.config(padx=20, pady=20)
+        #pass_window.geometry("500x500")
+                # service: label
+        service = Label(pass_window, text="Service: ", font=FONT)
+        service.grid(row=1, column=0)
+
+        # email/username label
+        svc_username = Label(pass_window, text="Username: ", font=FONT)
+        svc_username.grid(row=1, column=2)
+
+        # password: label
+        svc_password = Label(pass_window, text="Password: ", font=FONT)
+        svc_password.grid(row=1, column=4 )
+        row = 2
+        for svc in svc_list:
+            decryption_info = ( svc.service_password , svc.nonce , svc.authTag)
+            e = Label(pass_window, text=svc.service, font=FONT)
+            e.grid(row=row, column=0)
+            e = Label(pass_window, text=svc.service_username, font=FONT)
+            e.grid(row=row, column=2)
+            e = Label(pass_window, text=decrypt_AES_GCM(decryption_info , secretKey_half), font=FONT)
+            e.grid(row=row, column=4)
+
+            row=row+1
+        pass_window.mainloop()
+
+
+
 LoginPage()
 window.mainloop()

@@ -1,5 +1,6 @@
 from active_alchemy import ActiveAlchemy
 import hashlib
+from AES256GCM import encrypt_AES_GCM , decrypt_AES_GCM
 
 db = ActiveAlchemy("sqlite:///passwords.db")
 
@@ -14,6 +15,12 @@ def hash_pw(pw, hash_type):
 	    # SHA-512 hash of the password
         hash512 = hashlib.sha512(pw.encode('utf-8')).hexdigest()
         return hash512
+
+
+# def decrypt_passwords():
+    
+#     decryption_info = ( all_svc_info.service_password , all_svc_info.nonce , all_svc_info.authTag)
+
 
 
 class MainUser(db.Model):
