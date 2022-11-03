@@ -5,7 +5,7 @@ import pyperclip        #used for copy/paste clipboard functions
 from db import MainUser, ServicesPasswords, db, hash_pw #, decrypt_passwords
 from AES256GCM import encrypt_AES_GCM , decrypt_AES_GCM
 
-
+key_256 = ""
 FONT = ("Courier", 12, "bold")
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -84,6 +84,42 @@ class LoginPage():
 
 # --------------------------------------------- PAGE (2) --------------------------------------------- #
 class PWMPage():
+    @staticmethod
+    def enc_pass(msg, key_256 ):
+        secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8") # ASE-256 only accepts key size (32 byte) which is half of the sha256 value (64 byte)
+        encrypted_pw = encrypt_AES_GCM(msg, secretKey_half)
+        return encrypted_pw
+    @staticmethod
+    def enc_dec(key_256, new_pass):
+        print(new_pass)
+        hash_512 = hash_pw(new_pass, "sha512")
+        print(hash_512)
+        new_key_256 = hash_pw(new_pass, "sha256")
+        secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8") # ASE-256 only accepts key size (32 byte) which is half of the sha256 value (64 byte)
+        user = MainUser.query().first()
+        user.main_password = hash_512
+        db.session.commit()
+        print("TEST: DECRYPT ALL PASSWORDS AND SHOW THEM ..... ")
+        id = 0
+        for password in ServicesPasswords.query():
+            decryption_info = ( password.service_password , password.nonce , password.authTag)
+            decrypted_pass = decrypt_AES_GCM(decryption_info , secretKey_half)
+            encrypted_pass = PWMPage.enc_pass(decrypted_pass, new_key_256)
+            password.service_password= encrypted_pass[0]
+            password.nonce= encrypted_pass[1]
+            password.authTag= encrypted_pass[2]
+
+            db.session.commit()
+
+            id = id + 1
+        
+
+        
+            #print("Decrypted Password " , id , ":" , decrypt_AES_GCM(decryption_info , secretKey_half))
+        print("---------------------- #### END #### ----------------------")
+
+        
+
 
     # ---------------------------- ENTER SERVICE INFO ------------------------------- #
     def build_page(key_256):
@@ -127,7 +163,15 @@ class PWMPage():
 
         show_pass_button = Button(text="show Passwords", width=14)
         show_pass_button.grid(row=5, column=2)
-        show_pass_button.configure(command= lambda:show_passwords_page.create(key_256))
+        show_pass_button.configure(command= lambda:pages.show_passwords_page(key_256))
+
+
+        # Reset Password Button 
+
+        reset_button = Button(text="change password")
+        reset_button.grid(row=0, column=2) 
+        reset_button.configure(command= lambda:pages.change_password_page(key_256))
+
 
 
     #encrypt and insert to db
@@ -204,8 +248,9 @@ class PWMPage():
 
 
 # --------------------------------------------- APP LAUNCHER --------------------------------------------- #
-class show_passwords_page():
-    def create(key_256):
+class pages():
+
+    def show_passwords_page(key_256):
         secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8")
         svc_list = db.session.query(ServicesPasswords).all()
 
@@ -217,8 +262,8 @@ class show_passwords_page():
         canvas.grid(row=0, column=0)
         pass_window.title("passwords list")
         pass_window.config(padx=20, pady=20)
-        #pass_window.geometry("500x500")
-                # service: label
+
+        # service: label
         service = Label(pass_window, text="Service: ", font=FONT)
         service.grid(row=1, column=0)
 
@@ -242,6 +287,35 @@ class show_passwords_page():
             row=row+1
         pass_window.mainloop()
 
+
+    def change_password_page(key_256):
+        secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8")
+        svc_list = db.session.query(ServicesPasswords).all()
+
+        change_pass_window = Toplevel()
+        #the canvas
+        canvas = Canvas(change_pass_window ,width=200, height=200)
+        mypass_img = PhotoImage(file="assets/logo.png")
+        canvas.create_image(100, 100, image=mypass_img)
+        canvas.grid(row=0, column=0)
+        change_pass_window.title(" Change Password")
+        change_pass_window.config(padx=20, pady=20)
+        # Change_pass: label
+        change_pass = Label(change_pass_window, text="New Password: ", font=FONT)
+        change_pass.grid(row=1, column=0)
+        # Password_input box
+        update_input = Entry(change_pass_window, width=15)
+        update_input.grid(row=1, column=1)
+        
+        # Password change Button
+
+        update_button = Button(change_pass_window, text="update")
+        update_button.grid(row=2, column=1) 
+        # if update_input.get() == "" :
+        #     messagebox.showinfo(title="Listen Up", message="No empty fields allowed here!")
+        # else:
+        update_button.configure(command= lambda:PWMPage.enc_dec(key_256, update_input.get()))
+        change_pass_window.mainloop()
 
 
 LoginPage()

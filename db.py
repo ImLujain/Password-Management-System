@@ -17,11 +17,6 @@ def hash_pw(pw, hash_type):
         return hash512
 
 
-# def decrypt_passwords():
-    
-#     decryption_info = ( all_svc_info.service_password , all_svc_info.nonce , all_svc_info.authTag)
-
-
 
 class MainUser(db.Model):
     __tablename__ = "MainUser"
