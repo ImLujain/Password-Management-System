@@ -5,14 +5,13 @@ from AES256GCM import encrypt_AES_GCM , decrypt_AES_GCM
 db = ActiveAlchemy("sqlite:///passwords.db")
 
 def hash_pw(pw, hash_type):
-    # 256 for Main Password
+    # 256 as a key to encrypt passowrds
     if hash_type == "sha256":
-	    # SHA-256 hash of the password
         hash256 = hashlib.sha256(pw.encode('utf-8')).hexdigest()
         return hash256
-    # 512 for Key
+
     elif hash_type == "sha512":
-	    # SHA-512 hash of the password
+	    # SHA-512 hash for the Main Password
         hash512 = hashlib.sha512(pw.encode('utf-8')).hexdigest()
         return hash512
 
