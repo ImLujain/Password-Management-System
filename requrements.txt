@@ -1,5 +1,4 @@
 sqlite3
-tkinter
 cryptography
 active_alchemy
 pyperclip
