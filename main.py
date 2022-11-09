@@ -108,7 +108,7 @@ class LoginPage():
         mypass_img = PhotoImage(file="assets/logo.png")
         canvas.create_image(100, 100, image=mypass_img)
         canvas.grid(row=0, column=0)
-        reset_pass_window.title(" Change Password")
+        reset_pass_window.title(" Reset Password")
         reset_pass_window.config(padx=20, pady=20)
 
         # old_pass: label
@@ -255,8 +255,8 @@ class PWMPage():
         else:
             # (1) Encrypt Password with a random 256bit-key using ASE256 + GCM:
             msg = svc_password_input.get()
-            secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8") # ASE-256 only accepts key size (32 byte) ...
-                                                                           # which is half of the sha256 value after encoding (64 byte)
+            secretKey_half = key_256[:int(len(key_256)/2)].encode("utf-8") # ASE-256 only accepts key size (32 byte),  
+                                                                           # encoding doubles the value, so we need to divide it by 2 ...                                                                            
             encrypted_pw = encrypt_AES_GCM(msg.encode("utf-8") , secretKey_half)
 
             # (2) Save Service info to DB with Encrypted Password:
